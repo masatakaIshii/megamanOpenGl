@@ -28,6 +28,10 @@
 *.so.*
 *.dylib
 
+*.cbp
+*.depend
+*.layout
+
 # Executables
 *.exe
 *.out

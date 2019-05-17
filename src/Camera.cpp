@@ -1,5 +1,5 @@
 #include "Camera.h"
-#include <math.h>
+
 
 Camera::Camera()
 {

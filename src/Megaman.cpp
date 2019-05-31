@@ -7,24 +7,12 @@ Megaman::Megaman(){
     this->shootBullet = false;
     this->fire = false;
     this->walk = false;
+    this->jump = false;
+    this->onFloor = true;
     this->rightLeg = false;
     this->walkEtape = 1;
     this->seconds;
     this->puissance = 0;
-
-        // Transformations
-    this->angleArmX = 0;
-    this->angleForearmY = 0;
-    this->translateArmZ = 0;
-    this->translateArmY = 0;
-    this->translateBulletX[10];
-    this->translateBulletZ[10];
-    this->angleForelegX = 0;
-    this->angleLegX = 0;
-    this->translateForelegZ = -0.2;
-    this->angleForelegX_2 = 0;
-    this->angleLegX_2 = 0;
-    this->translateForelegZ_2 = -0.2;
 }
 
 /***** DRAW *****/
@@ -35,8 +23,29 @@ Megaman::Megaman(){
 void Megaman::Draw(){
     Object megaman(TETE, GL_CERCLE, 0.5, 18.0, 18.0);
     megaman.AddObject(CORPS, GL_TRAPEZE3D, 1.5, 0.8, -0.5, 0.3f);
+    const int size = 4;
+	float start[size] = { 120, 60, 20, -90 };
+	float degres[size] = { 300, -130, 140, -70 };
+	float sizex[size] = { 0.02, 0.02, 0.02, 0.04 };
+	float sizey[size] = { 0.08, 0.08, 0.08, 0.08 };
+	float sizez[size] = { 0.3, 0.3, 0.3, 0.1 };
+	float decalage[size] = { -0.5, -0.5, -0.5, -0.5 };
+    megaman.AddBigObject(CASQUE, GL_CIRCLE_ARC, sizex, sizey, sizez, decalage, start, degres, size);
+    megaman.AddObject(BRAS, GL_POLYGON, 0.15, 3, 30);
+	megaman.AddObject(AVANT_BRAS, GL_POLYGON, 0.15, 2, 30);
+	megaman.AddObject(CANON, GL_POLYGON, 0.3, 1.5, 30);
+	megaman.AddObject(JAMBE, GL_POLYGON, 0.2, 2, 30);
+	megaman.AddObject(AVANT_JAMBE, GL_POLYGON, 0.2, 2, 30);
+	megaman.AddObject(EYES, GL_CERCLE, 0.1, 18, 18);
+	megaman.AddObject(PUPILLE, GL_CERCLE, 0.02, 18, 18);
 
     Megaman::SetColors(&megaman);
+
+    glPushMatrix();
+	glTranslatef(0, jumpY, moveZ);
+
+	glPushMatrix();
+	glRotatef(angleBassinY, 0, 1, 0);
 
 	glPushMatrix();
 	glRotatef(90, 0, 0, 1);
@@ -48,9 +57,62 @@ void Megaman::Draw(){
 	megaman.Show(TETE);
 	glPopMatrix();
 
-	Megaman::SetArms(&megaman);
+	glPushMatrix();
+	glTranslatef(0.5, 2, -0.3);
+	megaman.BigShow(CASQUE, 0);
+	glPopMatrix();
 
-    Megaman::SetLegs(&megaman);
+	glPushMatrix();
+	glTranslatef(0, 2, 0.23);
+	glRotatef(270, 0, 1, 0);
+	glRotatef(180, 1, 0, 0);
+	megaman.BigShow(CASQUE, 1);
+	glPopMatrix();
+
+	glPushMatrix();
+	glTranslatef(0.5, 2, -0.2);
+	glRotatef(90, 1, 0, 0);
+	megaman.BigShow(CASQUE, 2);
+	glPopMatrix();
+
+	glPushMatrix();
+	glTranslatef(0, 2, 0.2);
+	//glRotatef(-45, 0, 0, 1);
+	glRotatef(270, 0, 1, 0);
+	//glRotatef(180, 1, 0, 0);
+	megaman.BigShow(CASQUE, 3);
+	glPopMatrix();
+
+	glPushMatrix();
+	glTranslatef(-0.2, 2.05, 0.17);
+	megaman.Show(EYES);
+	glPopMatrix();
+
+	glPushMatrix();
+	glTranslatef(0.2, 2.05, 0.17);
+	megaman.Show(EYES);
+	glPopMatrix();
+
+	glPushMatrix();
+	glTranslatef(-0.2, 2.05, 0.28);
+	megaman.Show(PUPILLE);
+	glPopMatrix();
+
+	glPushMatrix();
+	glTranslatef(0.2, 2.05, 0.28);
+	megaman.Show(PUPILLE);
+	glPopMatrix();
+
+	glPushMatrix();
+	glTranslatef(-0.2, 1.8, 0.21);
+	glBegin(GL_LINES);
+	glColor3f(0, 0, 0);
+	glVertex3f(0, 0, 0);
+	glVertex3f(0.5, 0, 0);
+	glEnd();
+	glPopMatrix();
+
+	Megaman::SetArms(&megaman);
 
 	if (bullet && shoot && canon) {
 		size_t now;
@@ -85,30 +147,51 @@ void Megaman::Draw(){
 			count++;
 		}
 	}
+    glPopMatrix();
+	Megaman::SetLegs(&megaman);
+	glPopMatrix();
+	AddCibles();
+}
+
+void Megaman::AddCibles(){
+    Object cibles(0, GL_CERCLE, 0.5, 18.0, 18.0);
+	cibles.Addcolor(WHITE, 1, 1, 1);
+	cibles.SetDefaultColor(WHITE);
+	float posCibles[5][3] = { {5,1.3,4},{-4,1.3,7},{-5,1.3,11},{6,1.3,3},{2,1.3,16} };
+	for (int i = 0; i < 5; i++) {
+		glPushMatrix();
+		glTranslatef(posCibles[i][0], posCibles[i][1], posCibles[i][2]);
+		cibles.Show(0);
+		glPopMatrix();
+	}
 }
 
 void Megaman::SetColors(Object *megaman){
 
 	megaman->Addcolor(BLUE, 0, 0, 1);
+	megaman->Addcolor(BLUE_LIGHT, 0.43, 0.65, 1);
 	megaman->Addcolor(WHITE, 1, 1, 1);
+    megaman->Addcolor(BEIGE, 0.95, 0.92, 0.8);
 	megaman->Addcolor(RED, 1, 0, 0);
+	megaman->Addcolor(RED_LIGHT, 0.97, 0.87, 0.24);
+
+	megaman->SetColor(TETE, BEIGE);
+	megaman->SetColor(EYES, WHITE);
 	if (fire)
 	{
 		megaman->SetDefaultColor(RED);
+		megaman->SetColor(BRAS, RED_LIGHT);
+		megaman->SetColor(JAMBE, RED_LIGHT);
 	}
 	else
 	{
 		megaman->SetDefaultColor(BLUE);
+		megaman->SetColor(BRAS, BLUE_LIGHT);
+		megaman->SetColor(JAMBE, BLUE_LIGHT);
 	}
 }
 
 void Megaman::SetArms(Object *megaman){
-
-	megaman->AddObject(BRAS, GL_POLYGON, 0.15, 3, 30);
-	megaman->AddObject(AVANT_BRAS, GL_POLYGON, 0.15, 2, 30);
-	megaman->AddObject(CANON, GL_POLYGON, 0.3, 1.5, 30);
-
-	glPushMatrix();
 
 	glPushMatrix();
 	glTranslatef(-1.2, 1.5, -0.25);
@@ -124,7 +207,9 @@ void Megaman::SetArms(Object *megaman){
 	megaman->Show(AVANT_BRAS);
 	glPopMatrix();
 
-	glPopMatrix();
+	glPushMatrix();
+	glRotatef(angleCanonY, 0, 1, 0);
+	glTranslatef(translateCanonX, 0, translateCanonZ);
 
 	glPushMatrix();
 	glTranslatef(0, translateArmY, translateArmZ);
@@ -151,14 +236,11 @@ void Megaman::SetArms(Object *megaman){
 		megaman->Show(AVANT_BRAS);
 	}
 	glPopMatrix();
-
+    glPopMatrix();
 	glPopMatrix();
 }
 
 void Megaman::SetLegs(Object *megaman){
-
-	megaman->AddObject(JAMBE, GL_POLYGON, 0.2, 2, 30);
-	megaman->AddObject(AVANT_JAMBE, GL_POLYGON, 0.2, 2, 30);
 	glPushMatrix();
 	glTranslatef(-0.6, -1.5, -0.2);
 	glRotatef(90, 1, 0, 0);
@@ -195,13 +277,15 @@ void Megaman::SetLegs(Object *megaman){
 * All method that move elements
 * @param value (int value) : inutile
 */
-void Megaman::Update(int value){
+void Megaman::Update(){
 
-    Megaman::MoveArm();
+    MoveArm();
 
-    Megaman::Walk();
+    Walk();
 
-    Megaman::ShootBullet();
+    ShootBullet();
+
+    Jump();
 
 	glutPostRedisplay();
 }
@@ -280,6 +364,7 @@ void Megaman::Walk(){
 			}
 			else if (walkEtape == 3) {
 				if (angleForelegX < 0) {
+                    moveZ += VITESSE_WALK;
 					angleForelegX += VITESSE;
 					angleLegX += (20 * VITESSE) / 25;
 					translateForelegZ -= (0.40 * VITESSE) / 25;
@@ -314,6 +399,7 @@ void Megaman::Walk(){
 			}
 			else if (walkEtape == 3) {
 				if (angleForelegX_2 < 0) {
+                    moveZ += VITESSE_WALK;
 					angleForelegX_2 += VITESSE;
 					angleLegX_2 += (20 * VITESSE) / 25;
 					translateForelegZ_2 -= (0.40 * VITESSE) / 25;
@@ -341,6 +427,25 @@ void Megaman::ShootBullet(){
 			}
 			else {
 				keepPuissance.pop_front();
+			}
+		}
+	}
+}
+
+void Megaman::Jump(){
+    if (!onFloor)
+	{
+		if (jump) {
+			jumpY += 0.05;
+			if (jumpY >= 4) {
+				jump = false;
+			}
+		}
+		else {
+			jumpY -= 0.05;
+			if (jumpY <= 0) {
+				onFloor = true;
+				jumpY = 0;
 			}
 		}
 	}

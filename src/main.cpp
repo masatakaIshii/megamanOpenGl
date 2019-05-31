@@ -53,7 +53,7 @@ void KeyboardDown(unsigned char key, int xx, int yy)
 {
     switch(key)
     {
-    case 'e': // Unlock Camera
+    case 'p': // Unlock Camera
         cam->locked = (cam->locked)?0:1;
         break;
     case 'z':
@@ -116,6 +116,35 @@ void KeyboardDown(unsigned char key, int xx, int yy)
 		else
 		{
 			megaman->walk = true;
+		}
+		break;
+
+    case SPACEBAR:
+		if (!megaman->jump && megaman->onFloor){
+			megaman->jump = true;
+			megaman->onFloor = false;
+		}
+		break;
+
+    case 'a':
+		if (megaman->shoot && megaman->angleCanonY < 62)
+		{
+			megaman->angleCanonY += 1.5;
+			megaman->translateCanonX -= 1.5 * 0.01;
+			megaman->translateCanonZ += 1.5 * 0.02;
+			//std::cout << angleCanonY << std::endl;
+			megaman->angleBassinY += 0.25;
+		}
+		break;
+
+	case 'e':
+		if (megaman->shoot)
+		{
+			megaman->angleCanonY -= 1.5;
+			megaman->translateCanonX += 1.5 * 0.01;
+			megaman->translateCanonZ -= 1.5 * 0.02;
+			//std::cout << angleCanonY << std::endl;
+			megaman->angleBassinY -= 0.25;
 		}
 		break;
     }
@@ -195,7 +224,7 @@ void mouseButton(int button, int state, int x, int y)
 void computePos(int inutile)
 {
     cam->updatePos();
-    megaman->Update(inutile);
+    megaman->Update();
     glutTimerFunc(10, computePos, 0);
 }
 
@@ -212,7 +241,11 @@ void renderScene(void)
 
     m->DrawGround();
     m->DrawSkybox(cam);
+    glPushMatrix();
+    glTranslatef(0,1,0);
+    glScalef(0.5, 0.5, 0.5);
     megaman->Draw();
+    glPopMatrix();
     glutSwapBuffers();
 }
 

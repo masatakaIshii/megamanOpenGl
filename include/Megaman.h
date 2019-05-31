@@ -18,7 +18,7 @@ class Megaman{
         Megaman();
 
         void Draw();
-        void Update(int value);
+        void Update();
 
         // Actions
         bool canon;
@@ -27,6 +27,8 @@ class Megaman{
         bool shootBullet;
         bool fire;
         bool walk;
+        bool jump;
+        bool onFloor;
         bool rightLeg;
         int walkEtape;
         time_t seconds;
@@ -34,8 +36,14 @@ class Megaman{
         list<float> keepPuissance;
 
         // Transformations
-        float angleArmX = 0;
+        float moveZ = 0;
+        float jumpY = 0;
+        float angleCanonY = 0;
+        float translateCanonX = 0;
+        float translateCanonZ = 0;
+        float angleBassinY = 0;
         float angleForearmY = 0;
+        float angleArmX = 0;
         float translateArmZ = 0;
         float translateArmY = 0;
         float translateBulletX[10];
@@ -54,11 +62,13 @@ class Megaman{
         void SetColors(Object *megaman);
         void SetArms(Object *megaman);
         void SetLegs(Object *megaman);
+        void AddCibles();
 
         // Update
         void MoveArm();
         void Walk();
         void ShootBullet();
+        void Jump();
 };
 
 

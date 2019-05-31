@@ -1,8 +1,8 @@
-#include<windows.h>
-#include<GL/glut.h>
-#include<stdlib.h>
-#include<stdio.h>
+#include <windows.h>
+#include <iostream> 
+#include "glut.h"
 #include "object.hpp"
+#include "forms.hpp"
 
 Object::Object()
 {
@@ -22,7 +22,7 @@ void Object::Addcolor(int indice, float red, float green, float blue)
 {
 	Vector3f color(red, green, blue);
 	m_color[indice] = color;
-	if(indice == m_countColor)
+	if (indice == m_countColor)
 	{
 		m_countColor++;
 	}
@@ -44,7 +44,7 @@ void Object::AddObject(int indice, GLenum mode, float x, float y, float z)
 	m_mode[indice] = mode;
 	Vector3f buffer(x, y, z);
 	m_pos[indice] = buffer;
-	if(indice == m_countObject)
+	if (indice == m_countObject)
 	{
 		m_countObject++;
 	}
@@ -80,6 +80,55 @@ void Object::AddObject(int indice, GLenum mode, float x, float y, float z, float
 	m_colorObject[indice] = -1;
 }
 
+void Object::AddObject(int indice, GLenum mode, float x, float y, float z, float decalage, float start, float degres)
+{
+	m_mode[indice] = mode;
+	Vector3f buffer(x, y, z);
+	Vector3f decalageBuffer(decalage, 0, 0);
+	m_decalage[indice] = decalageBuffer;
+	m_pos[indice] = buffer;
+	m_start[indice][0] = start;
+	m_degres[indice][0] = degres;
+	m_sizeParts[indice] = 1;
+	if (indice == m_countObject)
+	{
+		m_countObject++;
+	}
+	m_colorObject[indice] = -1;
+}
+
+void Object::AddBigObject(int indice, GLenum mode, float x[], float y[], float z[], float decalage[], float start[], float degres[], int size)
+{
+	if (size > 0 && size <= NUMBER_PARTS)
+	{
+		m_mode[indice] = mode;
+		for (int i = 0; i < size; i++)
+		{
+			Vector3f buffer(x[i], y[i], z[i]);
+			Vector3f decalageBuffer(decalage[i], 0, 0);
+			m_decalageBig[indice][i] = decalageBuffer;
+			m_posBig[indice][i] = buffer;
+		}
+		remplirTab(indice, start, size, 0);
+		remplirTab(indice, degres, size, 1);
+		m_sizeParts[indice] = size;
+		if (indice == m_countObject)
+		{
+			m_countObject++;
+		}
+		m_colorObject[indice] = -1;
+	}
+	else
+	{
+		if (m_message[indice])
+		{
+			std::cout << "Error Object class : mode define in addObject for form " << indice << " doesn't exist" << std::endl;
+			m_message[indice] = 0;
+		}
+	}
+
+}
+
 void Object::AddObject(int indice, GLenum mode, float x, float y, float z, int indiceColor)
 {
 	m_mode[indice] = mode;
@@ -96,7 +145,7 @@ void Object::Show(int indice)
 {
 	if ((int)m_mode[indice] == 7) // GL_QUADS
 	{
-		glBegin(m_mode[indice]);
+		glBegin(GL_QUADS);
 		chooseColor(indice);
 		glVertex3f(m_pos[indice].x, -m_pos[indice].y, m_pos[indice].z);
 		glVertex3f(-m_pos[indice].x, -m_pos[indice].y, m_pos[indice].z);
@@ -122,8 +171,8 @@ void Object::Show(int indice)
 		glBegin(GL_QUADS);
 		chooseColor(indice);
 		glVertex3f(m_pos[indice].x, -m_pos[indice].y - m_decalage[indice].x, m_pos[indice].z);
-		glVertex3f(-m_pos[indice].x , -m_pos[indice].y, m_pos[indice].z);
-		glVertex3f(-m_pos[indice].x , m_pos[indice].y, m_pos[indice].z);
+		glVertex3f(-m_pos[indice].x, -m_pos[indice].y, m_pos[indice].z);
+		glVertex3f(-m_pos[indice].x, m_pos[indice].y, m_pos[indice].z);
 		glVertex3f(m_pos[indice].x, m_pos[indice].y + m_decalage[indice].x, m_pos[indice].z);
 		glEnd();
 	}
@@ -131,43 +180,43 @@ void Object::Show(int indice)
 	{
 		glBegin(GL_QUADS);
 		chooseColor(indice);
-		glVertex3f(m_pos[indice].x, -m_pos[indice].y - m_decalage[indice].x, m_pos3D[indice]);
-		glVertex3f(-m_pos[indice].x, -m_pos[indice].y, m_pos3D[indice]);
-		glVertex3f(-m_pos[indice].x, m_pos[indice].y, m_pos3D[indice]);
-		glVertex3f(m_pos[indice].x, m_pos[indice].y + m_decalage[indice].x, m_pos3D[indice]);
+		printTrapeze3D(m_pos[indice].x, m_pos[indice].y, m_pos[indice].z, m_decalage[indice].x, m_pos3D[indice]);
 		glEnd();
-
+	}
+	else if ((int)m_mode[indice] == 35) //GL_RECTANGLE
+	{
 		glBegin(GL_QUADS);
 		chooseColor(indice);
-		glVertex3f(m_pos[indice].x, -m_pos[indice].y - m_decalage[indice].x, m_pos[indice].z);
-		glVertex3f(-m_pos[indice].x, -m_pos[indice].y, m_pos[indice].z);
-		glVertex3f(-m_pos[indice].x, m_pos[indice].y, m_pos[indice].z);
-		glVertex3f(m_pos[indice].x, m_pos[indice].y + m_decalage[indice].x, m_pos[indice].z);
+		printRectangle(m_pos[indice].x, m_pos[indice].y, m_pos[indice].z);
 		glEnd();
+	}
+	else if ((int)m_mode[indice] == 36) // GL_CIRCLE_ARC
+	{
+		for (int indice2 = 0; indice2 < m_sizeParts[indice]; indice2++)
+		{
+			float start = DEG2RAD(m_start[indice][indice2]);
+			float degres = DEG2RAD(m_degres[indice][indice2]);
 
-		glBegin(GL_QUADS);
-		chooseColor(indice);
-		glVertex3f(m_pos[indice].x, -m_pos[indice].y - m_decalage[indice].x, m_pos[indice].z);
-		glVertex3f(m_pos[indice].x, -m_pos[indice].y - m_decalage[indice].x, m_pos3D[indice]);
-		glVertex3f(m_pos[indice].x, m_pos[indice].y + m_decalage[indice].x, m_pos3D[indice]);
-		glVertex3f(m_pos[indice].x, m_pos[indice].y + m_decalage[indice].x, m_pos[indice].z);
-		glEnd();
-
-		glBegin(GL_QUADS);
-		chooseColor(indice);
-		glVertex3f(-m_pos[indice].x, -m_pos[indice].y, m_pos[indice].z);
-		glVertex3f(-m_pos[indice].x, -m_pos[indice].y, m_pos3D[indice]);
-		glVertex3f(-m_pos[indice].x, m_pos[indice].y, m_pos3D[indice]);
-		glVertex3f(-m_pos[indice].x, m_pos[indice].y, m_pos[indice].z);
-		glEnd();
-
-		glBegin(GL_QUADS);
-		chooseColor(indice);
-		glVertex3f(m_pos[indice].x, -m_pos[indice].y, m_pos[indice].z);
-		glVertex3f(m_pos[indice].x, -m_pos[indice].y, m_pos3D[indice]);
-		glVertex3f(-m_pos[indice].x, m_pos[indice].y, m_pos3D[indice]);
-		glVertex3f(-m_pos[indice].x, m_pos[indice].y, m_pos[indice].z);
-		glEnd();
+			for (float i = start; i < start + degres; i += 0.1)
+			{
+				glPushMatrix();
+				//glTranslatef(-i, i, 0); For do an escalier
+				glTranslatef(cos(i) * m_decalageBig[indice][indice2].x + m_decalageBig[indice][indice2].x, sin(i) * m_decalageBig[indice][indice2].x, 0);
+				glBegin(GL_QUADS);
+				chooseColor(indice);
+				printRectangle(m_posBig[indice][indice2].x, m_posBig[indice][indice2].y, m_posBig[indice][indice2].z);
+				glEnd();
+				glPopMatrix();
+			}
+		}
+	}
+	else
+	{
+		if (m_message[indice])
+		{
+			std::cout << "Error Object class : mode define in addObject for form " << indice << " doesn't exist" << std::endl;
+			m_message[indice] = 0;
+		}
 	}
 }
 
@@ -187,6 +236,79 @@ void Object::ShowAll()
 	}
 }
 
+void Object::BigShow(int indice, int indice2)
+{
+	if ((int)m_mode[indice] == 36) // GL_CIRCLE_ARC
+	{
+		float start = DEG2RAD(m_start[indice][indice2]);
+		float degres = DEG2RAD(m_degres[indice][indice2]);
+		if (degres >= 0)
+		{
+			for (float i = start; i < start + degres; i += 0.1)
+			{
+				glPushMatrix();
+				//glTranslatef(-i, i, 0); For do an escalier
+				glTranslatef(cos(i) * m_decalageBig[indice][indice2].x + m_decalageBig[indice][indice2].x, sin(i) * m_decalageBig[indice][indice2].x, 0);
+				glBegin(GL_QUADS);
+				chooseColor(indice);
+				printRectangle(m_posBig[indice][indice2].x, m_posBig[indice][indice2].y, m_posBig[indice][indice2].z);
+				glEnd();
+				glPopMatrix();
+			}
+		}
+		else
+		{
+			for (float i = start; i > start + degres; i -= 0.1)
+			{
+				glPushMatrix();
+				glTranslatef(cos(i) * m_decalageBig[indice][indice2].x + m_decalageBig[indice][indice2].x, sin(i) * m_decalageBig[indice][indice2].x, 0);
+				glBegin(GL_QUADS);
+				chooseColor(indice);
+				printRectangle(m_posBig[indice][indice2].x, m_posBig[indice][indice2].y, m_posBig[indice][indice2].z);
+				glEnd();
+				glPopMatrix();
+			}
+		}
+	}
+}
+
+void Object::BigShow(int indice, int indice2, int color)
+{
+	if ((int)m_mode[indice] == 36) // GL_CIRCLE_ARC
+	{
+		float start = DEG2RAD(m_start[indice][indice2]);
+		float degres = DEG2RAD(m_degres[indice][indice2]);
+		if (degres >= 0)
+		{
+			for (float i = start; i < start + degres; i += 0.1)
+			{
+				glPushMatrix();
+				//glTranslatef(-i, i, 0); For do an escalier
+				glTranslatef(cos(i) * m_decalageBig[indice][indice2].x + m_decalageBig[indice][indice2].x, sin(i) * m_decalageBig[indice][indice2].x, 0);
+				glBegin(GL_QUADS);
+				glColor3f(m_color[color].x, m_color[color].y, m_color[color].z);
+				printRectangle(m_posBig[indice][indice2].x, m_posBig[indice][indice2].y, m_posBig[indice][indice2].z);
+				glEnd();
+				glPopMatrix();
+			}
+		}
+		else
+		{
+			for (float i = start; i > start + degres; i -= 0.1)
+			{
+				glPushMatrix();
+				glTranslatef(cos(i) * m_decalageBig[indice][indice2].x + m_decalageBig[indice][indice2].x, sin(i) * m_decalageBig[indice][indice2].x, 0);
+				glBegin(GL_QUADS);
+				glColor3f(m_color[color].x, m_color[color].y, m_color[color].z);
+				printRectangle(m_posBig[indice][indice2].x, m_posBig[indice][indice2].y, m_posBig[indice][indice2].z);
+				glEnd();
+				glPopMatrix();
+			}
+		}
+	}
+}
+
+
 void Object::chooseColor(int indice)
 {
 	if (m_colorObject[indice] != -1)
@@ -199,5 +321,27 @@ void Object::chooseColor(int indice)
 		{
 			glColor3f(m_defaultColor.x, m_defaultColor.y, m_defaultColor.z);
 		}
+	}
+}
+
+void Object::remplirTab(int indice, float tab[], int size, int tabRemplir)
+{
+	if (size > 0 && size <= NUMBER_PARTS)
+	{
+		for (int i = 0; i < size; i++)
+		{
+			if (tabRemplir == 0)
+			{
+				m_start[indice][i] = tab[i];
+			}
+			else
+			{
+				m_degres[indice][i] = tab[i];
+			}
+		}
+	}
+	else
+	{
+		std::cout << "Error Object class : size define in addObject for indice " << indice << "not good" << std::endl;
 	}
 }
